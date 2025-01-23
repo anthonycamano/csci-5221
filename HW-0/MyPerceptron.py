@@ -58,6 +58,8 @@ def updateW(w, xt, yt):
     new_w = w   # placehold to store the updated w, can ignore this line
     # Implement the If statement here based on Line 4-5 of the pseudo-code
     # fill in the code here
+    if yt*np.inner(w,xt)<=0:
+        new_w = new_w + yt*xt
 
     return new_w
 
@@ -71,6 +73,7 @@ def predict(w, X):
     y_hat = 0  # placehold to store predict result y_hat, can ignore this line
     # compute the inner product of w and X, and convert the value into a list of -1/+1 based on the sign
     # fill in the code here
+    y_hat = np.sign(np.matmul(X, w))
 
     return y_hat
 
@@ -85,5 +88,6 @@ def computeError(y, y_hat):
     # compute the error rate: y is the groundtruth and y_hat is the predictions
     # e.g if y=[1,1,1,1,-1], y_hat = [1,1,1,1,1], there is 1 error, the error rate is 1/5 = 0.20
     # fill in the code here
+    e = np.sum(y!=y_hat)/len(y)
     
     return e
