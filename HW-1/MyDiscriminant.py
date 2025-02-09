@@ -34,10 +34,12 @@ class GaussianDiscriminant_C1(GaussianDiscriminantBase):
         # m1, S1 for class1
         self.m[0,:] = computeMean(Xtrain1)
         ## filling in your code here !!!!!!!!!!!!!!!!! add a line to compute S1 for class 1
+        self.S[0,:,:] = computeCov(Xtrain1)
         
         # m2, S2 for class2
         self.m[1,:]  = computeMean(Xtrain2)
         ## filling in your code here !!!!!!!!!!!!!!!!! add a line to compute S2 for class 2
+        self.S[1,:,:] = computeCov(Xtrain2)
         
         # priors for both class
         self.p = computePrior(ytrain)
@@ -56,10 +58,33 @@ class GaussianDiscriminant_C1(GaussianDiscriminantBase):
         # Step1: plug in the test data features and compute the discriminant functions for both classes (you need to choose the correct discriminant functions)
         # you will finall get two list of discriminant values (g1,g2), both have the shape n (n is the number of Xtest)
 
+        mean1 = self.m[0];
+        mean2 = self.m[1];
+        S1 = self.S[0];
+        S2 = self.S[1];
+
+        inv_cov1 = np.linalg.inv(S1)
+        inv_cov2 = np.linalg.inv(S2)
+        det_cov1 = np.linalg.det(S1)
+        det_cov2 = np.linalg.det(S2)
+
+        g1 = [];
+        g2 = [];
+
+        for x in Xtest:
+            g1.append(-0.5 * np.dot(np.dot((x - mean1).T, inv_cov1), (x - mean1)) - 0.5 * np.log(det_cov1))
+            g2.append(-0.5 * np.dot(np.dot((x - mean2).T, inv_cov2), (x - mean2)) - 0.5 * np.log(det_cov2))
+
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step2: 
         # if g1>g2, choose class1, otherwise choose class 2, you can convert g1 and g2 into your final predictions
         # e.g. g1 = [0.1, 0.2, 0.4, 0.3], g2 = [0.3, 0.3, 0.3, 0.4], => predictions = [2,2,1,2]
+
+        for i in range(len(g1)):
+            if g1[i] > g2[i]:
+                predictions[i] = 1
+            else:
+                predictions[i] = 2
 
         return np.array(predictions)
 
@@ -90,6 +115,7 @@ class GaussianDiscriminant_C2(GaussianDiscriminantBase):
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step 3: Compute the shared covariance matrix that is used for both class
         # shared_S is computed by finding a covariance matrix of all the data 
+        self.shared_S = computeCov(Xtrain)
 
     # predict the labels for test data
     # Input:
@@ -105,10 +131,33 @@ class GaussianDiscriminant_C2(GaussianDiscriminantBase):
         # Step1: plug in the test data features and compute the discriminant functions for both classes (you need to choose the correct discriminant functions)
         # you will finall get two list of discriminant values (g1,g2), both have the shape n (n is the number of Xtest)
 
+        prior = self.p;
+        mean1 = self.m[0];
+        mean2 = self.m[1];
+        S = self.shared_S;
+
+        inv_cov = np.linalg.inv(S)
+        det_cov = np.linalg.det(S)
+
+        g1 = [];
+        g2 = [];
+
+        for x in Xtest:
+            g1.append(-0.5 * (np.dot(np.dot((x - mean1).T, inv_cov), (x - mean1)) - 0.5 * np.log(det_cov)) + np.log(prior[0]))
+            g2.append(-0.5 * (np.dot(np.dot((x - mean2).T, inv_cov), (x - mean2)) - 0.5 * np.log(det_cov)) + np.log(prior[1]))
+        
+
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step2: 
         # if g1>g2, choose class1, otherwise choose class 2, you can convert g1 and g2 into your final predictions
         # e.g. g1 = [0.1, 0.2, 0.4, 0.3], g2 = [0.3, 0.3, 0.3, 0.4], => predictions = [2,2,1,2]
+
+        for i in range(len(g1)):
+            if g1[i] > g2[i]:
+                predictions[i] = 1
+            else:
+                predictions[i] = 2
+
         return np.array(predictions)
 
 
@@ -137,11 +186,15 @@ class GaussianDiscriminant_C3(GaussianDiscriminantBase):
 
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step 3: Compute the shared covariance matrix that is used for both class
-        # shared_S is computed by finding a covariance matrix of all the data 
+        # shared_S is computed by finding a covariance matrix of all the data
+        #  
+        self.shared_S = computeCov(Xtrain)
         
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step 4: Compute the diagonal of shared_S
         # [[1,2],[2,4]] => [[1,0],[0,4]], try np.diag()
+        self.shared_S = np.diag(np.diag(self.shared_S))
+
 
     # predict the labels for test data
     # Input:
@@ -158,10 +211,31 @@ class GaussianDiscriminant_C3(GaussianDiscriminantBase):
         # you will finall get two list of discriminant values (g1,g2), both have the shape n (n is the number of Xtest)
         # Please note here, currently we assume shared_S is a d*d diagonal matrix, the non-capital si^2 in the lecture formula will be the i-th entry on the diagonal
 
+        mean1 = self.m[0];
+        mean2 = self.m[1];
+        S = self.shared_S;
+
+        inv_cov = np.linalg.inv(S)
+        det_cov = np.linalg.det(S)
+
+        g1 = [];
+        g2 = [];
+
+        for x in Xtest:
+            g1.append(-0.5 * np.dot(np.dot((x - mean1).T, inv_cov), (x - mean1)) - 0.5 * np.log(det_cov))
+            g2.append(-0.5 * np.dot(np.dot((x - mean2).T, inv_cov), (x - mean2)) - 0.5 * np.log(det_cov))
+
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step2: 
         # if g1>g2, choose class1, otherwise choose class 2, you can convert g1 and g2 into your final predictions
         # e.g. g1 = [0.1, 0.2, 0.4, 0.3], g2 = [0.3, 0.3, 0.3, 0.4], => predictions = [2,2,1,2]
+
+        for i in range(len(g1)):
+            if g1[i] > g2[i]:
+                predictions[i] = 1
+            else:
+                predictions[i] = 2
+                
         return np.array(predictions)
 
 
@@ -184,6 +258,17 @@ def splitData(features, labels):
     # if features = [[1,1],[2,2],[3,3],[4,4]] and labels = [1,1,1,2], the resulting feature1 and feature2 will be
     # feature1 = [[1,1],[2,2],[3,3]], feature2 = [[4,4]]
 
+    index1 = 0
+    index2 = 0
+
+    for i in range(len(labels)):
+        if labels[i] == 1:
+            features1[index1] = features[i]
+            index1 += 1
+        else:
+            features2[index2] = features[i]
+            index2 += 1
+
     return features1, features2
 
 
@@ -198,10 +283,11 @@ def computeMean(features):
 
     # fill in the code here !!!!!!!!!!!!!!!!!!!!!!! 
     # try to explore np.mean() for convenience
+    m = np.mean(features, axis=0)
     return m
 
 
-# compute the mean of input features
+# compute the covariance of input features
 # input: 
 # features: n*d
 # output: d*d
@@ -212,6 +298,7 @@ def computeCov(features):
 
     # fill in the code here !!!!!!!!!!!!!!!!!!!!!!!
     # try to explore np.cov() for convenience
+    S = np.cov(features.T)
     return S
 
 
@@ -226,6 +313,9 @@ def computePrior(labels):
 
     # fill in the code here !!!!!!!!!!!!!!!!!!!!!!! 
     # p1 = numOf class1 / numOf all the data; same as p2
+    p[0] = np.sum(labels == 1) / len(labels)
+    p[1] = np.sum(labels == 2) / len(labels)
+
     return p
 
 
@@ -241,6 +331,12 @@ def compute_precision(ytest, predictions):
     # fill in the code here !!!!!!!!!!!!!!!!!!!!!!
     # precision = countOf[true positive predictions] / countOf[positive predictions]
     # here we assume label==2 is the positive label
+
+    true_positive = np.sum((ytest == 2) & (predictions == 2))
+    positive_predictions = np.sum(predictions == 2)
+
+    precision = true_positive / positive_predictions
+
     return precision
 
 # compute the recall
@@ -255,4 +351,10 @@ def compute_recall(ytest, predictions):
     # fill in the code here !!!!!!!!!!!!!!!!!!!!!!
     # precision = countOf[true positive predictions] / countOf[positive labels in ytest]
     # here we assume label==2 is the positive label
+
+    true_positive = np.sum((ytest == 2) & (predictions == 2))
+    positive_labels = np.sum(ytest == 2)
+
+    recall = true_positive / positive_labels
+    
     return recall 
