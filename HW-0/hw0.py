@@ -16,9 +16,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from pdb import set_trace # useful for debugging
 from MyPerceptron import MyPerceptron
-import os
-
-print(os.getcwd())
 
 # Data loading
 data = np.genfromtxt('AltData.csv', delimiter=',')
