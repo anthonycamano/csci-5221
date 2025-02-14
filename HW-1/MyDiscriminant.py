@@ -139,17 +139,18 @@ class GaussianDiscriminant_C2(GaussianDiscriminantBase):
         S = self.shared_S;
 
         inv_cov = np.linalg.inv(S)
-        # det_cov = np.linalg.det(S)
+        det_cov = np.linalg.det(S)
 
         g1 = [];
         g2 = [];
 
         for x in Xtest:
-            g1.append(-0.5 * np.dot(np.dot((x - mean1).T, inv_cov), (x - mean1)) + np.log(prior[0]))
-            g2.append(-0.5 * np.dot(np.dot((x - mean2).T, inv_cov), (x - mean2)) + np.log(prior[1]))
-            
-            ## discriminants from class 1
+            # g1.append(-0.5 * np.dot(np.dot((x - mean1).T, inv_cov), (x - mean1)) + np.log(prior[0]))
+            # g2.append(-0.5 * np.dot(np.dot((x - mean2).T, inv_cov), (x - mean2)) + np.log(prior[1]))
 
+            ## discriminants from class 1
+            g1.append((-0.5 * (np.log(det_cov))) - (0.5 * ((np.dot(x.T, inv_cov).dot(x)) - 2 * (np.dot(x.T, inv_cov).dot(mean1)) + (np.dot(mean1.T, inv_cov).dot(mean1)))) + np.log(prior[0]))
+            g2.append((-0.5 * (np.log(det_cov))) - (0.5 * ((np.dot(x.T, inv_cov).dot(x)) - 2 * (np.dot(x.T, inv_cov).dot(mean2)) + (np.dot(mean2.T, inv_cov).dot(mean2)))) + np.log(prior[1]))
         
 
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
@@ -222,10 +223,11 @@ class GaussianDiscriminant_C3(GaussianDiscriminantBase):
         ## reminder that S is diagnonal
         S = self.shared_S;
 
-        inv_cov = np.linalg.inv(S)
-
         prior = self.p
-        # det_cov = np.linalg.det(S)
+
+
+        det_cov = np.linalg.det(S)
+        inv_cov = np.linalg.inv(S)
 
 
 
@@ -235,10 +237,12 @@ class GaussianDiscriminant_C3(GaussianDiscriminantBase):
         for x in Xtest:
             diff1 = x - mean1
             diff2 = x - mean2
-            g1.append(-0.5 * np.sum((diff1 ** 2) / np.diag(S)) + np.log(prior[0]))
-            g2.append(-0.5 * np.sum((diff2 ** 2) / np.diag(S)) + np.log(prior[1]))
+            # g1.append(-0.5 * np.sum((diff1 ** 2) / np.diag(S)) + np.log(prior[0]))
+            # g2.append(-0.5 * np.sum((diff2 ** 2) / np.diag(S)) + np.log(prior[1]))
 
             ## discriminants from class 1
+            g1.append((-0.5 * (np.log(det_cov))) - (0.5 * ((np.dot(x.T, inv_cov).dot(x)) - 2 * (np.dot(x.T, inv_cov).dot(mean1)) + (np.dot(mean1.T, inv_cov).dot(mean1)))) + np.log(prior[0]))
+            g2.append((-0.5 * (np.log(det_cov))) - (0.5 * ((np.dot(x.T, inv_cov).dot(x)) - 2 * (np.dot(x.T, inv_cov).dot(mean2)) + (np.dot(mean2.T, inv_cov).dot(mean2)))) + np.log(prior[1]))
 
         # Fill in your code here !!!!!!!!!!!!!!!!!!!!!!!
         # Step2: 
